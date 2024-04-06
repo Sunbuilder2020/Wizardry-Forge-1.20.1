@@ -13,6 +13,9 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.sunbuilder2020.wizardry.items.ModCreativeModeTabs;
+import net.sunbuilder2020.wizardry.items.ModItems;
+import net.sunbuilder2020.wizardry.networking.ModMessages;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -27,14 +30,13 @@ public class Wizardry {
 
         MinecraftForge.EVENT_BUS.register(this);
 
-        modEventBus.addListener(this::addCreative);
+        ModItems.register(modEventBus);
+        ModCreativeModeTabs.register(modEventBus);
+
+        ModMessages.register();
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-    }
-
-    // Add the example block item to the building blocks tab
-    private void addCreative(BuildCreativeModeTabContentsEvent event) {
     }
 
     @SubscribeEvent
