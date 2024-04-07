@@ -3,7 +3,7 @@ package net.sunbuilder2020.wizardry.spells;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.sunbuilder2020.wizardry.spells.playerData.PlayerSpellsProvider;
 
@@ -46,6 +46,10 @@ public abstract class AbstractSpell {
         return String.format("spell.%s.%s", getSpellResource().getNamespace(), getSpellName());
     }
 
+    public final ResourceLocation getSpellIconResource() {
+        return new ResourceLocation(getSpellResource().getNamespace(), "textures/spell/spell_icons/" + getSpellName() + ".png");
+    }
+
     public List<MutableComponent> getUniqueInfo() {
         return List.of();
     }
@@ -68,6 +72,13 @@ public abstract class AbstractSpell {
         return this.getSpellResource().hashCode();
     }
 
+    public void castSpell(ServerPlayer player) {
+        onCast(player);
+    }
+
+    public void onCast(ServerPlayer player) {
+
+    }
 
     public boolean isLearned(Player player) {
         AtomicBoolean isLearned = new AtomicBoolean(false);

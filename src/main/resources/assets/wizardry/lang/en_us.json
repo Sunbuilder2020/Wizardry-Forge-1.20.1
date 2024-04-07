@@ -10,6 +10,7 @@
   "ui.wizardry.acupuncture.info": "Does nothing :)",
 
   "text.wizardry.spells.display_name": "Scroll of %s",
+  "text.wizardry.knowledge_scroll.info": "Hold Right-Click to learn this Spell.",
   "text.wizardry.spells.learned_message": "You have learned the %s Spell!",
   "text.wizardry.spells.already_learned_message": "You have already learned the %s Spell!",
 
@@ -21,6 +22,6 @@
   "text.wizardry.commands.get_spells.failure": "%s has no spells unlocked.",
   "text.wizardry.commands.set_spells.success": "Successfully set %s's spells.",
   "text.wizardry.commands.set_spells.failure": "Failed to set spells. Make sure the Player is valid.",
-  "text.wizardry.commands.clear_spells.success": "Successfully cleared %s's spells.",
-  "text.wizardry.commands.clear_spells.failure": "Failed to clear spells. Make sure the Player is valid."
+  "text.wizardry.commands.clear_spells.success": "Successfully cleared the spells of %d Players.",
+  "text.wizardry.commands.clear_spells.failure": "Failed to clear spells. Make sure all Players are valid."
 }

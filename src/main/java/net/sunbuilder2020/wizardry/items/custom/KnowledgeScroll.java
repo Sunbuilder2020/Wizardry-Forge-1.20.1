@@ -1,8 +1,10 @@
 package net.sunbuilder2020.wizardry.items.custom;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
@@ -13,6 +15,8 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.sunbuilder2020.wizardry.items.ModItems;
+import net.sunbuilder2020.wizardry.networking.ModMessages;
+import net.sunbuilder2020.wizardry.networking.packet.SpellsDataSyncS2CPacket;
 import net.sunbuilder2020.wizardry.spells.AbstractSpell;
 import net.sunbuilder2020.wizardry.spells.SpellRegistry;
 import net.sunbuilder2020.wizardry.spells.playerData.PlayerSpellsProvider;
@@ -72,13 +76,15 @@ public class KnowledgeScroll extends Item {
                         getSpellClassFromScroll(pStack).ifPresent(spell -> {
                             if (!playerSpells.hasSpell(spell.getSpellId())) {
                                 playerSpells.addSpell(spell.getSpellId());
+                                ModMessages.sendToClient(new SpellsDataSyncS2CPacket(playerSpells.getSpells()), (ServerPlayer) player);
+
 
                                 player.sendSystemMessage(
                                         Component.translatable("text.wizardry.spells.learned_message", spell.getDisplayName()));
                                 if (!player.isCreative() && !player.isSpectator()) pStack.shrink(1);
                             } else {
                                 player.sendSystemMessage(
-                                        Component.translatable("text.wizardry.spells.already_learned_message", spell.getDisplayName()));
+                                        Component.translatable("text.wizardry.spells.already_learned_message", spell.getDisplayName()).withStyle(ChatFormatting.RED));
                             }
                         });
                     });
@@ -113,6 +119,9 @@ public class KnowledgeScroll extends Item {
     @Override
     public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
         getSpellClassFromScroll(pStack).ifPresent(spell -> {
+            pTooltipComponents.add(Component.translatable("text.wizardry.knowledge_scroll.info"));
+            pTooltipComponents.add(Component.literal("\n\n"));
+
             List<MutableComponent> tooltipInfo = spell.getUniqueInfo();
 
             tooltipInfo.forEach(component -> {

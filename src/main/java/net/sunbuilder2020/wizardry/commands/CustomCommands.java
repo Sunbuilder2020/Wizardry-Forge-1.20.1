@@ -11,6 +11,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.sunbuilder2020.wizardry.networking.ModMessages;
+import net.sunbuilder2020.wizardry.networking.packet.SpellsDataSyncS2CPacket;
 import net.sunbuilder2020.wizardry.spells.playerData.PlayerSpellsProvider;
 
 import java.util.ArrayList;
@@ -47,9 +49,9 @@ public class CustomCommands {
                                         .executes(context -> executeGetSpells(context,
                                                 EntityArgument.getPlayer(context, "playerNames"))))
                         ).then(Commands.literal("clear")
-                                .then(Commands.argument("playerNames", EntityArgument.player())
+                                .then(Commands.argument("playerNames", EntityArgument.players())
                                         .executes(context -> executeClearSpells(context,
-                                                EntityArgument.getPlayer(context, "playerNames"))))
+                                                EntityArgument.getPlayers(context, "playerNames"))))
                         ).then(Commands.literal("set")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .then(Commands.argument("spells", StringArgumentType.greedyString())
@@ -67,6 +69,8 @@ public class CustomCommands {
 
         targets.forEach(target -> target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> {
             spells.addSpell(spellID);
+            ModMessages.sendToClient(new SpellsDataSyncS2CPacket(spells.getSpells()), target);
+
             successCount.getAndIncrement();
         }));
 
@@ -84,6 +88,8 @@ public class CustomCommands {
 
         targets.forEach(target -> target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> {
             spells.removeSpell(spell);
+            ModMessages.sendToClient(new SpellsDataSyncS2CPacket(spells.getSpells()), target);
+
             successCount.getAndIncrement();
         }));
 
@@ -123,6 +129,7 @@ public class CustomCommands {
 
         target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(playerSpells -> {
             playerSpells.setSpells(spells);
+            ModMessages.sendToClient(new SpellsDataSyncS2CPacket(playerSpells.getSpells()), target);
 
             succeeded.set(true);
         });
@@ -139,24 +146,25 @@ public class CustomCommands {
         }
     }
 
-    private static int executeClearSpells(CommandContext<CommandSourceStack> context, ServerPlayer target) {
-        AtomicBoolean succeeded = new AtomicBoolean(false);
+    private static int executeClearSpells(CommandContext<CommandSourceStack> context, Collection<ServerPlayer> targets) {
+        AtomicInteger successCount = new AtomicInteger(0);
 
-        target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(playerSpells -> {
-            playerSpells.setSpells(new ArrayList<>());
+        for (ServerPlayer player : targets) {
+            player.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(playerSpells -> {
+                playerSpells.setSpells(new ArrayList<>());
+                ModMessages.sendToClient(new SpellsDataSyncS2CPacket(playerSpells.getSpells()), player);
 
-            succeeded.set(true);
-        });
+                successCount.getAndIncrement();
+            });
+        }
 
-        if (succeeded.get()) {
+        if (successCount.get() > 0) {
             context.getSource().sendSuccess(() -> Component.translatable("text.wizardry.commands.clear_spells.success",
-                    target.getDisplayName().getString()), true);
-
-            return 1;
+                    successCount.get()), true);
         } else {
             context.getSource().sendFailure(Component.translatable("text.wizardry.commands.clear_spells.failure"));
-
-            return 0;
         }
+
+        return successCount.get();
     }
 }

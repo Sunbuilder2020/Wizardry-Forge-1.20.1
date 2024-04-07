@@ -2,6 +2,8 @@ package net.sunbuilder2020.wizardry.spells.playerData;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.common.capabilities.AutoRegisterCapability;
+import net.sunbuilder2020.wizardry.networking.ModMessages;
+import net.sunbuilder2020.wizardry.networking.packet.SpellsDataSyncS2CPacket;
 
 import java.util.ArrayList;
 import java.util.Arrays;

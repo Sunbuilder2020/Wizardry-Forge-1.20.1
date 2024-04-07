@@ -1,8 +1,12 @@
 package net.sunbuilder2020.wizardry.spells.spells;
 
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.sunbuilder2020.wizardry.Wizardry;
 import net.sunbuilder2020.wizardry.spells.AbstractSpell;
@@ -24,5 +28,12 @@ public class AcupunctureSpell extends AbstractSpell {
     @Override
     public ResourceLocation getSpellResource() {
         return spellId;
+    }
+
+    @Override
+    public void onCast(ServerPlayer player) {
+        super.onCast(player);
+
+        player.sendSystemMessage(Component.literal("Casted Acupuncture!"));
     }
 }
