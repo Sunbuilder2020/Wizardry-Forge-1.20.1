@@ -11,7 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.sunbuilder2020.wizardry.spells.PlayerSpellsProvider;
+import net.sunbuilder2020.wizardry.spells.playerData.PlayerSpellsProvider;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,12 +46,10 @@ public class CustomCommands {
                                 .then(Commands.argument("playerNames", EntityArgument.player())
                                         .executes(context -> executeGetSpells(context,
                                                 EntityArgument.getPlayer(context, "playerNames"))))
-                        ).then(Commands.literal("set")
-                                .then(Commands.argument("playerNames", EntityArgument.players())
-                                        .then(Commands.argument("spell", StringArgumentType.word())
-                                                .executes(context -> executeAddSpell(context,
-                                                        EntityArgument.getPlayers(context, "playerNames"),
-                                                        StringArgumentType.getString(context, "spell")))))
+                        ).then(Commands.literal("clear")
+                                .then(Commands.argument("playerNames", EntityArgument.player())
+                                        .executes(context -> executeClearSpells(context,
+                                                EntityArgument.getPlayer(context, "playerNames"))))
                         ).then(Commands.literal("set")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .then(Commands.argument("spells", StringArgumentType.greedyString())
@@ -63,18 +61,19 @@ public class CustomCommands {
         );
     }
 
-    private static int executeAddSpell(CommandContext<CommandSourceStack> context, Collection<ServerPlayer> targets, String spell) {
+    private static int executeAddSpell(CommandContext<CommandSourceStack> context, Collection<ServerPlayer> targets, String spellID) {
         AtomicInteger successCount = new AtomicInteger();
 
+
         targets.forEach(target -> target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> {
-            spells.addSpell(spell);
+            spells.addSpell(spellID);
             successCount.getAndIncrement();
         }));
 
         if (successCount.get() > 0) {
-            context.getSource().sendSuccess(() -> Component.literal("Successfully added the '" + spell + "' spell to " + successCount.get() + " players."), true);
+            context.getSource().sendSuccess(() -> Component.translatable("text.wizardry.commands.add_spells.success", successCount.get()), true);
         } else {
-            context.getSource().sendFailure(Component.literal("Failed to add the spell. Make sure the players are valid and try again."));
+            context.getSource().sendFailure(Component.translatable("text.wizardry.commands.add_spells.failure"));
         }
 
         return successCount.get();
@@ -89,9 +88,9 @@ public class CustomCommands {
         }));
 
         if (successCount.get() > 0) {
-            context.getSource().sendSuccess(() -> Component.literal("Successfully removed the '" + spell + "' spell from " + successCount.get() + " players."), true);
+            context.getSource().sendSuccess(() -> Component.translatable("text.wizardry.commands.remove_spells.success", successCount.get()), true);
         } else {
-            context.getSource().sendFailure(Component.literal("Failed to add the spell. Make sure the players are valid and try again."));
+            context.getSource().sendFailure(Component.translatable("text.wizardry.commands.remove_spells.failure"));
         }
 
         return successCount.get();
@@ -106,12 +105,12 @@ public class CustomCommands {
 
         if (!playerSpells.get().isEmpty()) {
             context.getSource().sendSuccess(() ->
-                    Component.literal(target.getDisplayName().getString() + " has the Spells: " + String.join(", ", playerSpells.get())),
-                    true);
+                    Component.translatable("text.wizardry.commands.get_spells.success", target.getDisplayName().getString())
+                            .append(String.join(", ", playerSpells.get())), true);
 
             return 1;
         } else {
-            context.getSource().sendFailure(Component.literal("Failed to get Spells. " + target.getDisplayName().getString() + " probably has no Spells."));
+            context.getSource().sendFailure(Component.translatable("text.wizardry.commands.get_spells.failure", target.getDisplayName().getString()));
 
             return 0;
         }
@@ -129,11 +128,33 @@ public class CustomCommands {
         });
 
         if (succeeded.get()) {
-            context.getSource().sendSuccess(() -> Component.literal("Successfully set " + target.getDisplayName().getString() + "'s spells."), true);
+            context.getSource().sendSuccess(() -> Component.translatable("text.wizardry.commands.set_spells.success",
+                    target.getDisplayName().getString()), true);
 
             return 1;
         } else {
-            context.getSource().sendFailure(Component.literal("Failed to set Spells. " + "Make sure " + target.getDisplayName().getString() + " is valid and try again."));
+            context.getSource().sendFailure(Component.translatable("text.wizardry.commands.set_spells.failure"));
+
+            return 0;
+        }
+    }
+
+    private static int executeClearSpells(CommandContext<CommandSourceStack> context, ServerPlayer target) {
+        AtomicBoolean succeeded = new AtomicBoolean(false);
+
+        target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(playerSpells -> {
+            playerSpells.setSpells(new ArrayList<>());
+
+            succeeded.set(true);
+        });
+
+        if (succeeded.get()) {
+            context.getSource().sendSuccess(() -> Component.translatable("text.wizardry.commands.clear_spells.success",
+                    target.getDisplayName().getString()), true);
+
+            return 1;
+        } else {
+            context.getSource().sendFailure(Component.translatable("text.wizardry.commands.clear_spells.failure"));
 
             return 0;
         }

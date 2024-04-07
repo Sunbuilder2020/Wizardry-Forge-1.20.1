@@ -1,8 +1,6 @@
-package net.sunbuilder2020.wizardry.spells;
+package net.sunbuilder2020.wizardry.spells.playerData;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraftforge.common.capabilities.AutoRegisterCapability;
 
 import java.util.ArrayList;
@@ -22,11 +20,15 @@ public class PlayerSpells {
     }
 
     public void addSpell(String add) {
-        this.spells.add(add);
+        if (!spells.contains(add)) this.spells.add(add);
     }
 
     public void removeSpell(String remove) {
         this.spells.remove(remove);
+    }
+
+    public boolean hasSpell(String spell) {
+        return spells.contains(spell);
     }
 
     public void copyFrom(PlayerSpells source) {

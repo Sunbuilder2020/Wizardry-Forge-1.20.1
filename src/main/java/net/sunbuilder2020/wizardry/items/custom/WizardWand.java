@@ -15,7 +15,5 @@ public class WizardWand extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand interactionHand) {
         return super.use(level, player, interactionHand);
-
-
     }
 }

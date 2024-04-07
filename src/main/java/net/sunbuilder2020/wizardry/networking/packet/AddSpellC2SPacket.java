@@ -2,12 +2,9 @@ package net.sunbuilder2020.wizardry.networking.packet;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraftforge.network.NetworkEvent;
 import net.sunbuilder2020.wizardry.networking.ModMessages;
-import net.sunbuilder2020.wizardry.spells.PlayerSpellsProvider;
+import net.sunbuilder2020.wizardry.spells.playerData.PlayerSpellsProvider;
 
 import java.util.function.Supplier;
 

@@ -1,5 +1,26 @@
 {
-  "creativetab.wizardry_tab": "Wizardry",
+  "creative_tab.wizardry_items_tab": "Wizardry Items",
+  "creative_tab.wizardry_spells_tab": "Wizardry Spells",
 
-  "item.wizardry.wizard_wand": "Wizard Wand"
+  "item.wizardry.wizard_wand": "Wizard Wand",
+  "item.wizardry.knowledge_scroll": "Scroll of Knowledge",
+
+  "spell.wizardry.acupuncture": "Acupuncture",
+
+  "ui.wizardry.acupuncture.info": "Does nothing :)",
+
+  "text.wizardry.spells.display_name": "Scroll of %s",
+  "text.wizardry.spells.learned_message": "You have learned the %s Spell!",
+  "text.wizardry.spells.already_learned_message": "You have already learned the %s Spell!",
+
+  "text.wizardry.commands.add_spells.success": "Successfully added the Spell to %d Players.",
+  "text.wizardry.commands.add_spells.failure": "Failed to add the spell. Make sure all Players are valid.",
+  "text.wizardry.commands.remove_spells.success": "Successfully removed the spell from %d Players.",
+  "text.wizardry.commands.remove_spells.failure": "Failed to remove the spell. Make sure all Players are valid.",
+  "text.wizardry.commands.get_spells.success": "%s has the spells: ",
+  "text.wizardry.commands.get_spells.failure": "%s has no spells unlocked.",
+  "text.wizardry.commands.set_spells.success": "Successfully set %s's spells.",
+  "text.wizardry.commands.set_spells.failure": "Failed to set spells. Make sure the Player is valid.",
+  "text.wizardry.commands.clear_spells.success": "Successfully cleared %s's spells.",
+  "text.wizardry.commands.clear_spells.failure": "Failed to clear spells. Make sure the Player is valid."
 }

@@ -1,4 +1,4 @@
-package net.sunbuilder2020.wizardry.spells;
+package net.sunbuilder2020.wizardry.spells.playerData;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -8,7 +8,7 @@ import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
-import org.jetbrains.annotations.NotNull;
+import net.sunbuilder2020.wizardry.spells.playerData.PlayerSpells;
 import org.jetbrains.annotations.Nullable;
 
 public class PlayerSpellsProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {

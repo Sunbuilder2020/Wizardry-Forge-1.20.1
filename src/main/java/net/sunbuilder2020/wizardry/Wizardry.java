@@ -16,13 +16,14 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.sunbuilder2020.wizardry.items.ModCreativeModeTabs;
 import net.sunbuilder2020.wizardry.items.ModItems;
 import net.sunbuilder2020.wizardry.networking.ModMessages;
+import net.sunbuilder2020.wizardry.spells.SpellRegistry;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(Wizardry.MOD_ID)
 public class Wizardry {
     public static final String MOD_ID = "wizardry";
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
     public Wizardry() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
@@ -32,6 +33,8 @@ public class Wizardry {
 
         ModItems.register(modEventBus);
         ModCreativeModeTabs.register(modEventBus);
+
+        SpellRegistry.register(modEventBus);
 
         ModMessages.register();
     }
