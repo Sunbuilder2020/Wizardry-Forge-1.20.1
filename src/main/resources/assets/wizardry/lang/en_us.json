@@ -23,5 +23,18 @@
   "text.wizardry.commands.set_spells.success": "Successfully set %s's spells.",
   "text.wizardry.commands.set_spells.failure": "Failed to set spells. Make sure the Player is valid.",
   "text.wizardry.commands.clear_spells.success": "Successfully cleared the spells of %d Players.",
-  "text.wizardry.commands.clear_spells.failure": "Failed to clear spells. Make sure all Players are valid."
+  "text.wizardry.commands.clear_spells.failure": "Failed to clear spells. Make sure all Players are valid.",
+  "text.wizardry.commands.get_active_spells.success": "%s has the spells active: ",
+  "text.wizardry.commands.get_active_spells.failure": "%s has no spells active.",
+  "text.wizardry.commands.set_active_spell.success": "Successfully set the active Spell of %d Players.",
+  "text.wizardry.commands.set_active_spell.failure": "Failed to set the active the spell. Make sure all Players are valid.",
+  "text.wizardry.commands.get_active_spell_slot.success": "The Player active spell slot is %d.",
+  "text.wizardry.commands.get_active_spell_slot.failure": "Failed to get active spell slot. Make sure the Player is valid.",
+
+  "key.category.wizardry": "Wizardry",
+  "key.wizardry.open_spell_gui": "Open Spell GUI",
+  "key.wizardry.switch_spell_left": "Switch active spell to left",
+  "key.wizardry.switch_spell_right": "Switch active spell to right",
+
+  "gui.wizardry.spell_gui": "Spells"
 }

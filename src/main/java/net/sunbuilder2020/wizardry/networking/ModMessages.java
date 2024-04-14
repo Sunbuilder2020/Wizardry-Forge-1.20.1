@@ -7,6 +7,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 import net.sunbuilder2020.wizardry.Wizardry;
+import net.sunbuilder2020.wizardry.networking.packet.SetSpellsDataC2SPacket;
 import net.sunbuilder2020.wizardry.networking.packet.SpellsDataSyncS2CPacket;
 
 public class ModMessages {
@@ -30,6 +31,12 @@ public class ModMessages {
                 .decoder(buf -> new SpellsDataSyncS2CPacket(buf))
                 .encoder(SpellsDataSyncS2CPacket::toBytes)
                 .consumerMainThread(SpellsDataSyncS2CPacket::handle)
+                .add();
+
+        net.messageBuilder(SetSpellsDataC2SPacket.class, ID(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(buf -> new SetSpellsDataC2SPacket(buf))
+                .encoder(SetSpellsDataC2SPacket::toBytes)
+                .consumerMainThread(SetSpellsDataC2SPacket::handle)
                 .add();
     }
 

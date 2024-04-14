@@ -12,6 +12,7 @@ import net.minecraftforge.registries.RegistryObject;
 import net.sunbuilder2020.wizardry.Wizardry;
 import net.sunbuilder2020.wizardry.spells.playerData.PlayerSpellsProvider;
 import net.sunbuilder2020.wizardry.spells.spells.AcupunctureSpell;
+import net.sunbuilder2020.wizardry.spells.spells.KillSpell;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -42,27 +43,8 @@ public class SpellRegistry {
     }
 
     public static AbstractSpell getSpell(ResourceLocation resourceLocation) {
-        var spell = REGISTRY.get().getValue(resourceLocation);
-        if (spell == null) {
-            //return noneSpell;
-        }
-        return spell;
-    }
-
-    public static AbstractSpell getActiveSpell(Player player) {
-        AtomicReference<AbstractSpell> activeSpell = new AtomicReference<>(null);
-
-        player.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(playerSpells -> {
-            for (String spell : playerSpells.getSpells()) {
-                if (SpellRegistry.isValidSpell(spell)) {
-                    activeSpell.set(SpellRegistry.getSpell(spell));
-
-                    break;
-                }
-            }
-        });
-
-        return activeSpell.get();
+        if (REGISTRY.get().containsKey(resourceLocation)) return REGISTRY.get().getValue(resourceLocation);
+        else return null;
     }
 
     public static boolean isValidSpell(String spellId) {
@@ -71,4 +53,5 @@ public class SpellRegistry {
     }
 
     public static final RegistryObject<AbstractSpell> ACUPUNCTURE_SPELL = registerSpell(new AcupunctureSpell());
+    public static final RegistryObject<AbstractSpell> KILL_SPELL = registerSpell(new KillSpell());
 }

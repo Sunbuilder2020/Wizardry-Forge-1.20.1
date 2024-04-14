@@ -76,7 +76,7 @@ public class KnowledgeScroll extends Item {
                         getSpellClassFromScroll(pStack).ifPresent(spell -> {
                             if (!playerSpells.hasSpell(spell.getSpellId())) {
                                 playerSpells.addSpell(spell.getSpellId());
-                                ModMessages.sendToClient(new SpellsDataSyncS2CPacket(playerSpells.getSpells()), (ServerPlayer) player);
+                                ModMessages.sendToClient(new SpellsDataSyncS2CPacket(playerSpells.getSpells(), playerSpells.getActiveSpells(), playerSpells.getActiveSpellSlot()), (ServerPlayer) player);
 
 
                                 player.sendSystemMessage(
@@ -120,7 +120,7 @@ public class KnowledgeScroll extends Item {
     public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
         getSpellClassFromScroll(pStack).ifPresent(spell -> {
             pTooltipComponents.add(Component.translatable("text.wizardry.knowledge_scroll.info"));
-            pTooltipComponents.add(Component.literal("\n\n"));
+            pTooltipComponents.add(Component.empty());
 
             List<MutableComponent> tooltipInfo = spell.getUniqueInfo();
 

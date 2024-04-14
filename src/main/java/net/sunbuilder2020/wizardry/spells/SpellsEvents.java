@@ -21,7 +21,7 @@ public class SpellsEvents {
         if(!event.getLevel().isClientSide){
             if(event.getEntity() instanceof ServerPlayer player) {
                 player.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> {
-                    ModMessages.sendToClient(new SpellsDataSyncS2CPacket(spells.getSpells()), player);
+                    ModMessages.sendToClient(new SpellsDataSyncS2CPacket(spells.getSpells(), spells.getActiveSpells(), spells.getActiveSpellSlot()), player);
                 });
             }
         }
@@ -46,7 +46,7 @@ public class SpellsEvents {
             original.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(oldSpells -> {
                 clone.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(newSpells -> {
                     newSpells.copyFrom(oldSpells);
-                    ModMessages.sendToClient(new SpellsDataSyncS2CPacket(newSpells.getSpells()), (ServerPlayer) clone);
+                    ModMessages.sendToClient(new SpellsDataSyncS2CPacket(newSpells.getSpells(), newSpells.getActiveSpells(), newSpells.getActiveSpellSlot()), (ServerPlayer) clone);
                 });
             });
 

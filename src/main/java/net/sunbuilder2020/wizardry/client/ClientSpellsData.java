@@ -6,27 +6,37 @@ import net.sunbuilder2020.wizardry.spells.SpellRegistry;
 import java.util.List;
 
 public class ClientSpellsData {
-    public static List<String> playerSpells;
+    public static List<String> spells;
+    public static List<String> activeSpells;
+    public static int activeSpellSlot;
 
-    public static void set(List<String> spells) {
-        ClientSpellsData.playerSpells = spells;
+    public static void setSpells(List<String> spells) {
+        ClientSpellsData.spells = spells;
     }
 
-    public static List<String> getPlayerSpells() {
-        return playerSpells;
+    public static void setActiveSpells(List<String> activeSpells) {
+        ClientSpellsData.activeSpells = activeSpells;
     }
 
-    public static AbstractSpell getActiveSpell() {
-        AbstractSpell activeSpell = null;
+    public static void setActiveSpellSlot(int spellSlot) {
+        ClientSpellsData.activeSpellSlot = spellSlot;
+    }
 
-        for (String spell : playerSpells) {
-            if (SpellRegistry.isValidSpell(spell)) {
-                activeSpell = SpellRegistry.getSpell(spell);
+    public static List<String> getSpells() {
+        return spells;
+    }
 
-                break;
-            }
-        }
+    public static List<String> getActiveSpells() {
+        return activeSpells;
+    }
 
-        return activeSpell;
+    public static int getActiveSpellSlot() {
+        return activeSpellSlot;
+    }
+
+    public static String getActiveSpellInSlot(int index) {
+        String spellAtSlot = activeSpells.get(index);
+
+        return (spellAtSlot.equals("null")) ? null : spellAtSlot;
     }
 }

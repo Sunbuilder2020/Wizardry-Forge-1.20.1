@@ -1,5 +1,6 @@
 package net.sunbuilder2020.wizardry.items.custom;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -18,14 +19,19 @@ public class WizardWand extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand interactionHand) {
-        player.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(playerSpells -> {
-            AbstractSpell activeSpell = SpellRegistry.getActiveSpell(player);
+        if (!level.isClientSide) {
+            player.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(playerSpells -> {
+                playerSpells.setActiveSpells(playerSpells.getActiveSpells());
 
-            if (activeSpell != null) {
-                activeSpell.castSpell((ServerPlayer) player);
-            }
+                String activeSpellID = playerSpells.getActiveSpell(playerSpells.getActiveSpellSlot());
+                AbstractSpell activeSpell = SpellRegistry.getSpell(activeSpellID);
 
-        });
+                if (activeSpell != null) {
+                    activeSpell.castSpell((ServerPlayer) player);
+                }
+
+            });
+        }
 
         return super.use(level, player, interactionHand);
     }
