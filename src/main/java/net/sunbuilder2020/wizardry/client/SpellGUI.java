@@ -39,50 +39,70 @@ public class SpellGUI extends Screen {
             }
         }
 
+        int spellsAmountX = 4;
+        int spellsAmountY = 3;
+
         int spellWidth = 24;
         int spellHeight = 32;
 
         int spellsDistanceX = 6;
         int spellsDistanceY = 9;
 
-        int spellsAreaX = (spellWidth + spellsDistanceX) * 4 - spellsDistanceX;
-        int spellsAreaY = (spellHeight + spellsDistanceY) * 3 - spellsDistanceY;
+        int spellsAreaX = (spellWidth + spellsDistanceX) * spellsAmountX - spellsDistanceX;
+        int spellsAreaY = (spellHeight + spellsDistanceY) * spellsAmountY - spellsDistanceY;
 
         int spellsAreaStartX = 11;
         int spellsAreaStartY = 85;
 
-        int spellX = x - spellsAreaStartX - spellsAreaX;
-        int spellY = y - spellsAreaStartY;
+        int spellsPerSide = 4 * 3;
 
-        int spellsPage = -1;
+        int startIndexLeft = activePage * spellsPerSide * 2;
+        int endIndexLeft = Math.min(startIndexLeft + spellsPerSide, spells.size());
+        int startIndexRight = endIndexLeft;
+        int endIndexRight = Math.min(startIndexRight + spellsPerSide, spells.size());
 
-        for (AbstractSpell spell : spells) {
-            SpellRenderComponent spellRenderComponent = new SpellRenderComponent(spell.getSpellResource(), spellWidth, spellHeight, spellX, spellY);
-            spellRenderComponent.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
+        renderSpells(pGuiGraphics, spells, spellWidth, spellHeight, spellsDistanceX, spellsDistanceY, x, y, spellsAreaStartX, spellsAreaStartY, spellsAreaX, spellsAreaY, startIndexLeft, endIndexLeft, true);
 
-            spellX += spellWidth + spellsDistanceX;
-            if (spellsPage == -1) {
-                if (spellX + spellWidth > x - spellsAreaStartX) {
-                    spellX = x - spellsAreaStartX - spellsAreaX;
-                    spellY += spellHeight + spellsDistanceY;
-                    if (spellY + spellHeight > y - spellsAreaStartY + spellsAreaY) {
-                        spellsPage = 1;
-                        spellX = x + spellsAreaStartX;
-                        spellY = y - spellsAreaStartY;
-                    }
-                }
-            }else if (spellsPage == 1) {
-                if (spellX + spellWidth > x + spellsAreaStartX + spellsAreaX) {
-                    spellX = x + spellsAreaStartX;
-                    spellY += spellHeight + spellsDistanceY;
-                    if (spellY + spellHeight > y + spellsAreaStartY + spellsAreaY) {
-                        break;
-                    }
-                }
-            }
-        }
+        renderSpells(pGuiGraphics, spells, spellWidth, spellHeight, spellsDistanceX, spellsDistanceY, x, y, spellsAreaStartX, spellsAreaStartY, spellsAreaX, spellsAreaY, startIndexRight, endIndexRight, false);
 
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
+    }
+
+    private void renderSpells(GuiGraphics pGuiGraphics, List<AbstractSpell> spells, int spellWidth, int spellHeight, int spellsDistanceX, int spellsDistanceY, int x, int y, int spellsAreaStartX, int spellsAreaStartY, int spellsAreaX, int spellsAreaY, int startIndex, int endIndex, boolean isLeftSide) {
+        int columnCounter = 0;
+        int rowCounter = 0;
+
+        int spellX = isLeftSide ? x - spellsAreaStartX - spellsAreaX : x + spellsAreaStartX;
+        int spellY = y - spellsAreaStartY;
+
+        for (int i = startIndex; i < endIndex; i++) {
+            AbstractSpell spell = spells.get(i);
+            SpellRenderComponent spellRenderComponent = new SpellRenderComponent(spell.getSpellResource(), spellWidth, spellHeight, spellX, spellY);
+            spellRenderComponent.render(pGuiGraphics, 0, 0, 0);
+
+            spellX += spellWidth + spellsDistanceX;
+            columnCounter++;
+
+            if (columnCounter >= 4) {
+                columnCounter = 0;
+                rowCounter++;
+                spellX = isLeftSide ? x - spellsAreaStartX - spellsAreaX : x + spellsAreaStartX;
+                spellY += spellHeight + spellsDistanceY;
+            }
+
+            if (rowCounter >= 3) {
+                break;
+            }
+        }
+    }
+
+
+    public void nextPage() {
+        activePage++;
+    }
+
+    public void previousPage() {
+        activePage = Math.max(activePage - 1, 0);
     }
 }
 
