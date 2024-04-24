@@ -33,8 +33,8 @@ public class SpellsDataSyncS2CPacket {
     public boolean handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
-            ClientSpellsData.setSpells(spells);
-            ClientSpellsData.setActiveSpells(activeSpells);
+            ClientSpellsData.setSpellIDs(spells);
+            ClientSpellsData.setActiveSpellIDs(activeSpells);
             ClientSpellsData.setActiveSpellSlot(activeSpellSlot);
         });
         return true;

@@ -4,15 +4,19 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.gui.screens.recipebook.RecipeBookTabButton;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.sunbuilder2020.wizardry.Wizardry;
 import net.sunbuilder2020.wizardry.spells.AbstractSpell;
 import net.sunbuilder2020.wizardry.spells.SpellRegistry;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@OnlyIn(Dist.CLIENT)
 public class SpellRenderComponent implements Renderable {
     private ResourceLocation spellLocation;
     private final ResourceLocation BACKGROUND_LOCATION = new ResourceLocation(Wizardry.MOD_ID, "textures/gui/spell_background.png");
@@ -52,6 +56,8 @@ public class SpellRenderComponent implements Renderable {
             // Draw the spell icon
             pGuiGraphics.blit(spellIcon, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
 
+            displayTooltip(pGuiGraphics, spell, pMouseX, pMouseY);
+
             float desiredTextHeight = this.height / 15f;
             int textHeight = Minecraft.getInstance().font.lineHeight;
             float scale = desiredTextHeight / textHeight;
@@ -69,8 +75,28 @@ public class SpellRenderComponent implements Renderable {
         pGuiGraphics.pose().popPose();
     }
 
+    public void displayTooltip(GuiGraphics pGuiGraphics, AbstractSpell spell, int mouseX, int mouseY) {
+        if (isMouseOver(mouseX, mouseY)) {
+            Font fontRenderer = Minecraft.getInstance().font;
+
+            MutableComponent spellName = spell.getDisplayName();
+            List<MutableComponent> spellUniqueInfo = spell.getUniqueInfo();
+            List<Component> tooltip = new ArrayList<>();
+            tooltip.add(spellName);
+            tooltip.add(Component.empty());
+            tooltip.addAll(spellUniqueInfo);
+
+            pGuiGraphics.renderComponentTooltip(fontRenderer, tooltip, mouseX, mouseY);
+        }
+    }
+
     public void write(GuiGraphics pGuiGraphics, MutableComponent text, int x, int y) {
         Font fontRenderer = Minecraft.getInstance().font;
         pGuiGraphics.drawString(fontRenderer, text.getVisualOrderText(), x, y, 0xFFFFFF);
+    }
+
+    public boolean isMouseOver(int mouseX, int mouseY) {
+        return mouseX >= this.posX && mouseX <= this.posX + this.width &&
+                mouseY >= this.posY && mouseY <= this.posY + this.height;
     }
 }
