@@ -9,15 +9,15 @@ import net.sunbuilder2020.wizardry.spells.AbstractSpell;
 
 import java.util.List;
 
-public class AcupunctureSpell extends AbstractSpell {
-    private final ResourceLocation spellId = new ResourceLocation(Wizardry.MOD_ID, "acupuncture");
+public class NoneSpell extends AbstractSpell {
+    private final ResourceLocation spellId = new ResourceLocation(Wizardry.MOD_ID, "none");
 
     @Override
     public List<MutableComponent> getUniqueInfo() {
-        return List.of(Component.translatable("ui.wizardry.acupuncture.info"));
+        return List.of(Component.translatable("ui.wizardry.none.info"));
     }
 
-    public AcupunctureSpell() {
+    public NoneSpell() {
     }
 
     @Override
@@ -29,6 +29,6 @@ public class AcupunctureSpell extends AbstractSpell {
     public void onCast(ServerPlayer player) {
         super.onCast(player);
 
-        player.sendSystemMessage(Component.literal("Casted Acupuncture!"));
+        player.sendSystemMessage(Component.literal("Casted NoneSpell!"));
     }
 }

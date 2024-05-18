@@ -1,6 +1,5 @@
 package net.sunbuilder2020.wizardry.items.custom;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -9,7 +8,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.sunbuilder2020.wizardry.spells.AbstractSpell;
-import net.sunbuilder2020.wizardry.spells.SpellRegistry;
 import net.sunbuilder2020.wizardry.spells.playerData.PlayerSpellsProvider;
 
 public class WizardWand extends Item {
@@ -23,13 +21,11 @@ public class WizardWand extends Item {
             player.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(playerSpells -> {
                 playerSpells.setActiveSpells(playerSpells.getActiveSpells());
 
-                String activeSpellID = playerSpells.getActiveSpell(playerSpells.getActiveSpellSlot());
-                AbstractSpell activeSpell = SpellRegistry.getSpell(activeSpellID);
+                AbstractSpell activeSpell = playerSpells.getActiveSpell(playerSpells.getActiveSpellSlot());
 
                 if (activeSpell != null) {
                     activeSpell.castSpell((ServerPlayer) player);
                 }
-
             });
         }
 

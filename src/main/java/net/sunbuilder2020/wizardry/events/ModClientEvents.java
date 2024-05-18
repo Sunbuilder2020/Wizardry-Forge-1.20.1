@@ -13,7 +13,7 @@ import net.sunbuilder2020.wizardry.util.KeyBinding;
 public class ModClientEvents {
     @SubscribeEvent
     public static void registerGuiOverlay(RegisterGuiOverlaysEvent event) {
-        event.registerAboveAll(Wizardry.MOD_ID + "spells", SpellsHudOverlay.Hud_SPELLS);
+        event.registerAboveAll("spells", SpellsHudOverlay.Hud_SPELLS);
     }
 
     @SubscribeEvent

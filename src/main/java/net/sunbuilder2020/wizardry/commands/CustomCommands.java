@@ -4,18 +4,18 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.sun.jdi.connect.Connector;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.sunbuilder2020.wizardry.Wizardry;
-import net.sunbuilder2020.wizardry.networking.ModMessages;
-import net.sunbuilder2020.wizardry.networking.packet.SpellsDataSyncS2CPacket;
+import net.sunbuilder2020.wizardry.spells.AbstractSpell;
+import net.sunbuilder2020.wizardry.spells.SpellRegistry;
 import net.sunbuilder2020.wizardry.spells.playerData.PlayerSpellsProvider;
 
 import java.util.ArrayList;
@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber
 public class CustomCommands {
@@ -82,12 +83,13 @@ public class CustomCommands {
     }
 
     private static int executeAddSpell(CommandContext<CommandSourceStack> context, Collection<ServerPlayer> targets, String spellID) {
+        if (!SpellRegistry.isValidSpell(Wizardry.MOD_ID + ":" + spellID)) return 0;
+
         AtomicInteger successCount = new AtomicInteger();
 
-
         targets.forEach(target -> target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> {
-            spells.addSpell(Wizardry.MOD_ID + ":" + spellID);
-            ModMessages.sendToClient(new SpellsDataSyncS2CPacket(spells.getSpells(), spells.getActiveSpells(), spells.getActiveSpellSlot()), target);
+            spells.addSpell(SpellRegistry.getSpell(Wizardry.MOD_ID + ":" + spellID));
+            spells.syncData(target);
 
             successCount.getAndIncrement();
         }));
@@ -105,8 +107,8 @@ public class CustomCommands {
         AtomicInteger successCount = new AtomicInteger();
 
         targets.forEach(target -> target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> {
-            spells.removeSpell(Wizardry.MOD_ID + ":" + spell);
-            ModMessages.sendToClient(new SpellsDataSyncS2CPacket(spells.getSpells(), spells.getActiveSpells(), spells.getActiveSpellSlot()), target);
+            spells.removeSpell(SpellRegistry.getSpell(Wizardry.MOD_ID + ":" + spell));
+            spells.syncData(target);
 
             successCount.getAndIncrement();
         }));
@@ -123,9 +125,9 @@ public class CustomCommands {
     private static int executeGetSpells(CommandContext<CommandSourceStack> context, ServerPlayer target) {
         AtomicReference<List<String>> playerSpells = new AtomicReference<>(new ArrayList<>());
 
-        target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> {
-            playerSpells.set(spells.getSpells());
-        });
+        target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> playerSpells.set(spells.getSpells().stream()
+                .map(AbstractSpell::getSpellName)
+                .collect(Collectors.toList())));
 
         if (!playerSpells.get().isEmpty()) {
             context.getSource().sendSuccess(() ->
@@ -143,15 +145,15 @@ public class CustomCommands {
     private static int executeSetSpells(CommandContext<CommandSourceStack> context, ServerPlayer target, String spellsAsString) {
         List<String> spells = Arrays.asList(spellsAsString.split(" "));
 
-        for (String spell : spells) {
-            spell = Wizardry.MOD_ID + ":" + spell;
-        }
+        spells.replaceAll(spell -> Wizardry.MOD_ID + ":" + spell);
 
         AtomicBoolean succeeded = new AtomicBoolean(false);
 
         target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(playerSpells -> {
-            playerSpells.setSpells(spells);
-            ModMessages.sendToClient(new SpellsDataSyncS2CPacket(playerSpells.getSpells(), playerSpells.getActiveSpells(), playerSpells.getActiveSpellSlot()), target);
+            playerSpells.setSpells(spells.stream()
+                    .map(SpellRegistry::getSpell)
+                    .collect(Collectors.toList()));
+            playerSpells.syncData(target);
 
             succeeded.set(true);
         });
@@ -174,7 +176,7 @@ public class CustomCommands {
         for (ServerPlayer player : targets) {
             player.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(playerSpells -> {
                 playerSpells.setSpells(new ArrayList<>());
-                ModMessages.sendToClient(new SpellsDataSyncS2CPacket(playerSpells.getSpells(), playerSpells.getActiveSpells(), playerSpells.getActiveSpellSlot()), player);
+                playerSpells.syncData(player);
 
                 successCount.getAndIncrement();
             });
@@ -193,9 +195,9 @@ public class CustomCommands {
     private static int executeGetActiveSpells(CommandContext<CommandSourceStack> context, ServerPlayer target) {
         AtomicReference<List<String>> playerSpells = new AtomicReference<>(new ArrayList<>());
 
-        target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> {
-            playerSpells.set(spells.getActiveSpells());
-        });
+        target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> playerSpells.set(spells.getActiveSpells().stream()
+                .map(AbstractSpell::getSpellName)
+                .collect(Collectors.toList())));
 
         if (!playerSpells.get().isEmpty()) {
             context.getSource().sendSuccess(() ->
@@ -215,9 +217,9 @@ public class CustomCommands {
 
 
         targets.forEach(target -> target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> {
-            spells.setActiveSpell(Wizardry.MOD_ID + ":" + spellID, index);
+            spells.setActiveSpell(SpellRegistry.getSpell(new ResourceLocation(Wizardry.MOD_ID, spellID)), index);
 
-            ModMessages.sendToClient(new SpellsDataSyncS2CPacket(spells.getSpells(), spells.getActiveSpells(), spells.getActiveSpellSlot()), target);
+            spells.syncData(target);
 
             successCount.getAndIncrement();
         }));
@@ -234,9 +236,7 @@ public class CustomCommands {
     private static int executeGetActiveSpellSlot(CommandContext<CommandSourceStack> context, ServerPlayer target) {
         AtomicReference<Integer> activeSpellSlot = new AtomicReference<>(-1);
 
-        target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> {
-            activeSpellSlot.set(spells.getActiveSpellSlot());
-        });
+        target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> activeSpellSlot.set(spells.getActiveSpellSlot()));
 
         if (activeSpellSlot.get() != -1) {
             context.getSource().sendSuccess(() ->

@@ -8,11 +8,11 @@ import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
-import net.sunbuilder2020.wizardry.spells.playerData.PlayerSpells;
 import org.jetbrains.annotations.Nullable;
 
 public class PlayerSpellsProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
-    public static Capability<PlayerSpells> PLAYER_SPELLS = CapabilityManager.get(new CapabilityToken<PlayerSpells>() {});
+    public static Capability<PlayerSpells> PLAYER_SPELLS = CapabilityManager.get(new CapabilityToken<>() {
+    });
 
     private PlayerSpells playerSpells = null;
     private final LazyOptional<PlayerSpells> optional = LazyOptional.of(this::createPlayerSpells);

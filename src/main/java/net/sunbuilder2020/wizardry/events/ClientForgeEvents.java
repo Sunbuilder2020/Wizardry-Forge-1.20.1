@@ -1,7 +1,6 @@
 package net.sunbuilder2020.wizardry.events;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -9,9 +8,11 @@ import net.minecraftforge.fml.common.Mod;
 import net.sunbuilder2020.wizardry.Wizardry;
 import net.sunbuilder2020.wizardry.client.ClientSpellsData;
 import net.sunbuilder2020.wizardry.client.SpellGUI;
-import net.sunbuilder2020.wizardry.networking.ModMessages;
-import net.sunbuilder2020.wizardry.networking.packet.SetSpellsDataC2SPacket;
+import net.sunbuilder2020.wizardry.spells.AbstractSpell;
+import net.sunbuilder2020.wizardry.spells.SpellRegistry;
 import net.sunbuilder2020.wizardry.util.KeyBinding;
+
+import java.util.List;
 
 @Mod.EventBusSubscriber(modid = Wizardry.MOD_ID, value = Dist.CLIENT)
 public class ClientForgeEvents {
@@ -30,29 +31,37 @@ public class ClientForgeEvents {
         }
     }
 
+    /**
+     * @param amount should only be a value of either -1 or 1
+     */
     public static void switchSpellSlot(int amount) {
-        if (ClientSpellsData.getActiveSpellIDs().size() > 1) {
-            int originalSpellSlot = ClientSpellsData.getActiveSpellSlot();
-            int spellSlot = originalSpellSlot;
-            int attempts = 0;
+        if (!(amount == 1 || amount == -1)) return;
 
-            do {
-                spellSlot += amount;
-                if (spellSlot >= ClientSpellsData.getActiveSpellIDs().size()) {
-                    spellSlot = 0;
-                } else if (spellSlot < 0) {
-                    spellSlot = ClientSpellsData.getActiveSpellIDs().size() - 1;
-                }
+        int activeSpellSlot = ClientSpellsData.getActiveSpellSlot();
+        List<AbstractSpell> activeSpells = ClientSpellsData.getActiveSpells();
 
-                if (++attempts > ClientSpellsData.getActiveSpellIDs().size()) {
-                    return;
-                }
-            } while (ClientSpellsData.getActiveSpellInSlot(spellSlot) == null);
-
-            ClientSpellsData.setActiveSpellSlot(spellSlot);
-            if (spellSlot != originalSpellSlot) {
-                ModMessages.sendToServer(new SetSpellsDataC2SPacket(ClientSpellsData.getSpellIDs(), ClientSpellsData.getActiveSpellIDs(), ClientSpellsData.getActiveSpellSlot()));
-            }
+        if (activeSpells.isEmpty()) {
+            return;
         }
+
+        int originalSlot = activeSpellSlot;
+        do {
+            activeSpellSlot += amount;
+
+            if (activeSpellSlot < 0) {
+                activeSpellSlot = activeSpells.size() - 1;
+            } else if (activeSpellSlot >= activeSpells.size()) {
+                activeSpellSlot = 0;
+            }
+
+            if (activeSpellSlot == originalSlot) {
+                break;
+            }
+        } while (SpellRegistry.isNotNoneSpell(activeSpells.get(activeSpellSlot)));
+
+        ClientSpellsData.setActiveSpellSlot(activeSpellSlot);
+        ClientSpellsData.syncData();
+
+        Wizardry.LOGGER.info("Active Spell Slot: " + activeSpellSlot);
     }
 }

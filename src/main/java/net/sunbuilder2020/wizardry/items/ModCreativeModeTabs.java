@@ -15,9 +15,6 @@ import net.sunbuilder2020.wizardry.Wizardry;
 import net.sunbuilder2020.wizardry.items.custom.KnowledgeScroll;
 import net.sunbuilder2020.wizardry.spells.SpellRegistry;
 
-import java.io.Console;
-import java.util.logging.ConsoleHandler;
-
 @Mod.EventBusSubscriber(modid = Wizardry.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ModCreativeModeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
@@ -35,7 +32,7 @@ public class ModCreativeModeTabs {
             () -> CreativeModeTab.builder().icon(() -> new ItemStack(ModItems.KNOWLEDGE_SCROLL.get()))
                     .title(Component.translatable("creative_tab.wizardry_spells_tab"))
                     .displayItems((pParameters, pOutput) -> {
-                        pOutput.accept(ModItems.KNOWLEDGE_SCROLL.get());
+                        //pOutput.accept(ModItems.KNOWLEDGE_SCROLL.get());
                     })
                     .build());
 

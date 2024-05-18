@@ -10,8 +10,6 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.sunbuilder2020.wizardry.Wizardry;
-import net.sunbuilder2020.wizardry.networking.ModMessages;
-import net.sunbuilder2020.wizardry.networking.packet.SpellsDataSyncS2CPacket;
 import net.sunbuilder2020.wizardry.spells.playerData.PlayerSpellsProvider;
 
 @Mod.EventBusSubscriber(modid = Wizardry.MOD_ID)
@@ -20,9 +18,7 @@ public class SpellsEvents {
     public static void onPlayerJoinWorld(EntityJoinLevelEvent event) {
         if(!event.getLevel().isClientSide){
             if(event.getEntity() instanceof ServerPlayer player) {
-                player.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> {
-                    ModMessages.sendToClient(new SpellsDataSyncS2CPacket(spells.getSpells(), spells.getActiveSpells(), spells.getActiveSpellSlot()), player);
-                });
+                player.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> spells.syncData(player));
             }
         }
     }
@@ -43,12 +39,10 @@ public class SpellsEvents {
             Player clone = event.getEntity();
 
             original.reviveCaps();
-            original.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(oldSpells -> {
-                clone.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(newSpells -> {
-                    newSpells.copyFrom(oldSpells);
-                    ModMessages.sendToClient(new SpellsDataSyncS2CPacket(newSpells.getSpells(), newSpells.getActiveSpells(), newSpells.getActiveSpellSlot()), (ServerPlayer) clone);
-                });
-            });
+            original.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(oldSpells -> clone.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(newSpells -> {
+                newSpells.copyFrom(oldSpells);
+                newSpells.syncData((ServerPlayer) clone);
+            }));
 
             original.invalidateCaps();
         }

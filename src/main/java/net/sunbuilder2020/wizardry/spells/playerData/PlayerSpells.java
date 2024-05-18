@@ -1,63 +1,76 @@
 package net.sunbuilder2020.wizardry.spells.playerData;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.capabilities.AutoRegisterCapability;
 import net.sunbuilder2020.wizardry.Wizardry;
 import net.sunbuilder2020.wizardry.networking.ModMessages;
 import net.sunbuilder2020.wizardry.networking.packet.SpellsDataSyncS2CPacket;
+import net.sunbuilder2020.wizardry.spells.AbstractSpell;
+import net.sunbuilder2020.wizardry.spells.SpellRegistry;
+import net.sunbuilder2020.wizardry.spells.spells.NoneSpell;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @AutoRegisterCapability
 public class PlayerSpells {
-    private List<String> spells = new ArrayList<>();
-    private List<String> activeSpells = new ArrayList<>();
+    private List<AbstractSpell> spells = new ArrayList<>();
+    private List<AbstractSpell> activeSpells = new ArrayList<>();
     private int activeSpellSlot = 0;
-    private int activeSpellsAmount = 10;
 
-    public List<String> getSpells() {
+    public List<AbstractSpell> getSpells() {
         return spells;
     }
 
-    public void setSpells(List<String> spells) {
+    public void setSpells(List<AbstractSpell> spells) {
         this.spells = new ArrayList<>(spells);
     }
 
-    public void addSpell(String add) {
-        if (!spells.contains(add)) this.spells.add(add);
+    public void addSpell(AbstractSpell add) {
+        if (!spells.contains(add)) {
+            this.spells.add(add);
+        }
     }
 
-    public void removeSpell(String remove) {
+    public void removeSpell(AbstractSpell remove) {
         this.spells.remove(remove);
     }
 
-    public boolean hasSpell(String spell) {
+    public boolean hasSpell(AbstractSpell spell) {
         return spells.contains(spell);
     }
 
-    public List<String> getActiveSpells() {
+    public List<AbstractSpell> getActiveSpells() {
         return activeSpells;
     }
 
-    public String getActiveSpell(int index) {
-        return activeSpells.get(index);
+    public AbstractSpell getActiveSpell(int index) {
+        return index >= 0 && index < activeSpells.size() ? activeSpells.get(index) : null;
     }
 
-    public void setActiveSpells(List<String> activeSpells) {
+    public void setActiveSpells(List<AbstractSpell> activeSpells) {
         this.activeSpells = new ArrayList<>(activeSpells);
     }
 
-    public void setActiveSpell(String spell, int index) {
+    public void setActiveSpell(AbstractSpell spell, int index) {
+        if (index >= activeSpells.size()) {
+            while (activeSpells.size() <= index) {
+                activeSpells.add(null);
+            }
+        }
         this.activeSpells.set(index, spell);
     }
 
-    public void addActiveSpell(String add) {
-        if (!activeSpells.contains(add)) this.activeSpells.add(add);
+    public void addActiveSpell(AbstractSpell add) {
+        if (!activeSpells.contains(add)) {
+            this.activeSpells.add(add);
+        }
     }
 
-    public void removeActiveSpell(String remove) {
+    public void removeActiveSpell(AbstractSpell remove) {
         this.activeSpells.remove(remove);
     }
 
@@ -69,39 +82,57 @@ public class PlayerSpells {
         this.activeSpellSlot = slot;
     }
 
-    public int getActiveSpellsAmount() {
-        return this.activeSpellsAmount;
-    }
-
-    public void setActiveSpellsAmount(int amount) {
-        this.activeSpellsAmount = amount;
-    }
-
     public void copyFrom(PlayerSpells source) {
         this.spells = new ArrayList<>(source.getSpells());
-        this.activeSpells = new ArrayList<>(source.getSpells());
+        this.activeSpells = new ArrayList<>(source.getActiveSpells());
+        this.activeSpellSlot = source.getActiveSpellSlot();
     }
 
     public void saveNBTData(CompoundTag nbt) {
-        String spellsAsString = String.join(";", this.spells);
-        String activeSpellsAsString = String.join(";", this.activeSpells);
+        List<String> spellIDs = spells.stream()
+                .map(AbstractSpell::getSpellId)
+                .collect(Collectors.toList());
+        List<String> activeSpellIDs = activeSpells.stream()
+                .map(AbstractSpell::getSpellId)
+                .collect(Collectors.toList());
+
+        String spellsAsString = String.join(";", spellIDs);
+        String activeSpellsAsString = String.join(";", activeSpellIDs);
 
         nbt.putString(Wizardry.MOD_ID + "spells", spellsAsString);
         nbt.putString(Wizardry.MOD_ID + "active_spells", activeSpellsAsString);
+        nbt.putInt(Wizardry.MOD_ID + "active_spell_slot", this.activeSpellSlot);
     }
+
 
     public void loadNBTData(CompoundTag nbt) {
         String spellsAsString = nbt.getString(Wizardry.MOD_ID + "spells");
         String activeSpellsAsString = nbt.getString(Wizardry.MOD_ID + "active_spells");
 
-        this.activeSpells = new ArrayList<>(Arrays.asList(activeSpellsAsString.split(";")));
-        this.spells = new ArrayList<>(Arrays.asList(spellsAsString.split(";")));
+        List<String> spellIDs = new ArrayList<>(Arrays.asList(spellsAsString.split(";")));
+        List<String> activeSpellIDs = new ArrayList<>(Arrays.asList(activeSpellsAsString.split(";")));
 
-        while (this.activeSpells.size() < this.activeSpellsAmount) {
-            this.activeSpells.add("null");
+        this.spells = spellIDs.stream()
+                .map(SpellRegistry::getSpell)
+                .collect(Collectors.toList());
+        this.activeSpells = activeSpellIDs.stream()
+                .map(SpellRegistry::getSpell)
+                .collect(Collectors.toList());
+        this.activeSpellSlot = nbt.getInt(Wizardry.MOD_ID + "active_spell_slot");
+    }
+
+    public void removeInvalidSpells() {
+        spells.removeIf(spell -> spell instanceof NoneSpell);
+        activeSpells.removeIf(spell -> spell instanceof NoneSpell);
+    }
+
+    public void trimActiveSpells() {
+        if (activeSpells.size() > 8) {
+            activeSpells = activeSpells.subList(0, 8);
         }
-        if (this.activeSpells.size() > this.activeSpellsAmount) {
-            this.activeSpells = new ArrayList<>(this.activeSpells.subList(0, this.activeSpellsAmount));
-        }
+    }
+
+    public void syncData(ServerPlayer player) {
+        ModMessages.sendToServer(new SpellsDataSyncS2CPacket(spells, activeSpells, activeSpellSlot), player);
     }
 }

@@ -77,15 +77,12 @@ public abstract class AbstractSpell {
     }
 
     public void onCast(ServerPlayer player) {
-
     }
 
     public boolean isLearned(Player player) {
         AtomicBoolean isLearned = new AtomicBoolean(false);
 
-        player.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(playerSpells -> {
-            isLearned.set(playerSpells.hasSpell(spellID));
-        });
+        player.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(playerSpells -> isLearned.set(playerSpells.hasSpell(this)));
 
         return isLearned.get();
     }

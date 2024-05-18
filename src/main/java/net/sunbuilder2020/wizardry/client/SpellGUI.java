@@ -11,14 +11,26 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.sunbuilder2020.wizardry.Wizardry;
 import net.sunbuilder2020.wizardry.spells.AbstractSpell;
-import net.sunbuilder2020.wizardry.spells.SpellRegistry;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public class SpellGUI extends Screen {
-    private final ResourceLocation spellGUIScreen = new ResourceLocation(Wizardry.MOD_ID, "textures/gui/spell_gui.png");
+    private static final ResourceLocation SPELL_GUI_SCREEN = new ResourceLocation(Wizardry.MOD_ID, "textures/gui/spell_gui.png");
+    private static final int GUI_WIDTH = 280;
+    private static final int GUI_HEIGHT = 214;
+
+    private static final int SPELL_WIDTH = 24;
+    private static final int SPELL_HEIGHT = 32;
+    private static final int SPELLS_PER_ROW = 4;
+    private static final int SPELL_ROWS_PER_PAGE = 3;
+    private static final int SPELLS_DISTANCE_X = 6;
+    private static final int SPELLS_DISTANCE_Y = 9;
+    private static final int SPELLS_AREA_START_X = 11;
+    private static final int SPELLS_AREA_START_Y = 127;
+
+    private static final int ACTIVE_SPELL_OFFSET_Y = 42;
+
     private int activePage = 0;
     private SpellGuiArrowComponent arrowLeft;
     private SpellGuiArrowComponent arrowRight;
@@ -29,130 +41,114 @@ public class SpellGUI extends Screen {
 
     @Override
     public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
-        this.width = 331;
-        this.height = 246;
+        this.width = GUI_WIDTH;
+        this.height = GUI_HEIGHT;
+        int centerX = pGuiGraphics.guiWidth() / 2;
+        int centerY = pGuiGraphics.guiHeight() / 2;
 
-        int x = pGuiGraphics.guiWidth() / 2;
-        int y = pGuiGraphics.guiHeight() / 2;
-
-        pGuiGraphics.blit(spellGUIScreen, x - this.width / 2, y - this.height / 2, 0, 0, this.width, this.height, this.width, this.height);
+        pGuiGraphics.blit(SPELL_GUI_SCREEN, centerX - this.width / 2, centerY - this.height / 2, 0, 0, this.width, this.height, this.width, this.height);
 
         List<AbstractSpell> spells = ClientSpellsData.getSpells();
 
-        int spellsAmountX = 4;
-        int spellsAmountY = 3;
+        renderSpellPages(pGuiGraphics, spells, centerX, centerY, pMouseX, pMouseY, pPartialTick);
 
-        int spellWidth = 24;
-        int spellHeight = 32;
+        renderActiveSpells(pGuiGraphics, ClientSpellsData.getActiveSpells(), centerX, centerY, pMouseX, pMouseY, pPartialTick);
 
-        int spellsDistanceX = 6;
-        int spellsDistanceY = 9;
-
-        int spellsAreaX = (spellWidth + spellsDistanceX) * spellsAmountX - spellsDistanceX;
-        int spellsAreaY = (spellHeight + spellsDistanceY) * spellsAmountY - spellsDistanceY;
-
-        int spellsAreaStartX = 11;
-        int spellsAreaStartY = 85;
-
-        int spellsPerSide = 4 * 3;
-        int pages = (int) Math.ceil(spells.size() / (spellsPerSide * 2));
-
-        int startIndexLeft = activePage * spellsPerSide * 2;
-        int endIndexLeft = Math.min(startIndexLeft + spellsPerSide, spells.size());
-        int startIndexRight = endIndexLeft;
-        int endIndexRight = Math.min(startIndexRight + spellsPerSide, spells.size());
-
-        renderSpells(pGuiGraphics, spells, spellWidth, spellHeight, spellsDistanceX, spellsDistanceY, x, y, spellsAreaStartX, spellsAreaStartY, spellsAreaX, spellsAreaY, startIndexLeft, endIndexLeft, true, pMouseX, pMouseY, pPartialTick);
-
-        renderSpells(pGuiGraphics, spells, spellWidth, spellHeight, spellsDistanceX, spellsDistanceY, x, y, spellsAreaStartX, spellsAreaStartY, spellsAreaX, spellsAreaY, startIndexRight, endIndexRight, false, pMouseX, pMouseY, pPartialTick);
-
-        List<AbstractSpell> activeSpells = ClientSpellsData.getActiveSpells();
-
-        int activeSpellAreaX = this.width - 80;
-        int activeSpellAreaStartX = x - this.width / 2 + 40;
-        int activeSpellY = this.height - 40 - spellHeight;
-
-        renderActiveSpells(pGuiGraphics, activeSpells, spellWidth, spellHeight, activeSpellAreaX, activeSpellY, activeSpellAreaStartX, pMouseX, pMouseY, pPartialTick);
-
-        if (this.activePage > 0) {
-            this.arrowLeft = new SpellGuiArrowComponent(true, 18, 18, x - this.width / 2 + 55 - 18, y + this.height / 2 - 50);
-
-            arrowLeft.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
-        }
-        if (this.activePage < pages)  {
-            this.arrowRight = new SpellGuiArrowComponent(false, 18, 18, x + this.width / 2 - 55, y + this.height / 2 - 50);
-
-            arrowRight.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
-        }
+        renderGuiArrows(pGuiGraphics, pMouseX, pMouseY, pPartialTick, centerX, centerY);
 
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
     }
 
-    private void renderSpells(GuiGraphics pGuiGraphics, List<AbstractSpell> spells, int spellWidth, int spellHeight, int spellsDistanceX, int spellsDistanceY, int x, int y, int spellsAreaStartX, int spellsAreaStartY, int spellsAreaX, int spellsAreaY, int startIndex, int endIndex, boolean isLeftSide, int mouseX, int mouseY, float partialTick) {
-        int columnCounter = 0;
-        int rowCounter = 0;
+    private void renderSpellPages(GuiGraphics pGuiGraphics, List<AbstractSpell> spells, int centerX, int centerY, int mouseX, int mouseY, float partialTick) {
+        int spells_per_page = SPELLS_PER_ROW * SPELL_ROWS_PER_PAGE * 2;
+        int spell_index = activePage * spells_per_page;
 
-        int spellX = isLeftSide ? x - spellsAreaStartX - spellsAreaX : x + spellsAreaStartX;
-        int spellY = y - spellsAreaStartY;
+        for (int i = -1; i <= 1; i += 2) {
+            for (int y = 0; y < SPELL_ROWS_PER_PAGE; y++) {
+                for (int x = 0; x < SPELLS_PER_ROW; x++) {
+                    if (spell_index > spells.size() - 1) break;
 
-        for (int i = startIndex; i < endIndex; i++) {
-            AbstractSpell spell = spells.get(i);
-            SpellRenderComponent spellRenderComponent = new SpellRenderComponent(spell.getSpellResource(), spellWidth, spellHeight, spellX, spellY);
-            spellRenderComponent.render(pGuiGraphics, mouseX, mouseY, partialTick);
+                    int spellX = centerX - SPELLS_AREA_START_X - SPELL_WIDTH * (SPELLS_PER_ROW - x) - SPELLS_DISTANCE_X * (SPELLS_PER_ROW - x - 1);
 
-            spellX += spellWidth + spellsDistanceX;
-            columnCounter++;
+                    if (i == 1) {
+                        spellX = centerX + SPELLS_AREA_START_X + SPELL_WIDTH * x + SPELLS_DISTANCE_X * x;
+                    }
 
-            if (columnCounter >= 4) {
-                columnCounter = 0;
-                rowCounter++;
-                spellX = isLeftSide ? x - spellsAreaStartX - spellsAreaX : x + spellsAreaStartX;
-                spellY += spellHeight + spellsDistanceY;
-            }
+                    int spellY = centerY - SPELLS_AREA_START_Y + SPELL_HEIGHT * (y + 1) + SPELLS_DISTANCE_Y * y;
 
-            if (rowCounter >= 3) {
-                break;
+                    SpellRenderComponent spell = new SpellRenderComponent(spells.get(spell_index), SPELL_WIDTH, SPELL_HEIGHT, spellX, spellY);
+                    spell.render(pGuiGraphics, mouseX, mouseY, partialTick);
+
+                    spell_index++;
+                }
             }
         }
     }
 
-    private void renderActiveSpells(GuiGraphics pGuiGraphics, List<AbstractSpell> activeSpells, int spellWidth, int spellHeight, int spellsAreaX, int spellY, int spellsAreaStartX, int mouseX, int mouseY, float partialTick) {
-        for (int i = 0; i < 10; i++) {
-            int spellX = spellsAreaX / 10 * i + spellsAreaStartX;
-            AbstractSpell spell = activeSpells.get(i);
+    private void renderActiveSpells(GuiGraphics pGuiGraphics, List<AbstractSpell> activeSpells, int centerX, int centerY, int mouseX, int mouseY, float partialTick) {
+        if (activeSpells.isEmpty()) return;
 
-            ActiveSpellRenderComponent activeSpellRenderComponent = new ActiveSpellRenderComponent(spell, spellWidth, spellHeight, spellX, spellY);
-            activeSpellRenderComponent.render(pGuiGraphics, mouseX, mouseY, partialTick);
+        int spellY = centerY + ACTIVE_SPELL_OFFSET_Y;
+        int spell_index = 0;
+        int max_active_spells = 8;
+
+        for (int i = -1; i <= 1; i += 2) {
+            for (int x = 0; x < max_active_spells / 2; x++) {
+                if (spell_index > activeSpells.size() - 1) break;
+
+                int spellX = centerX - SPELLS_AREA_START_X - SPELL_WIDTH * (max_active_spells / 2 - x) - SPELLS_DISTANCE_X * (max_active_spells / 2 - x - 1);
+
+                if (i == 1) {
+                    spellX = centerX + SPELLS_AREA_START_X + SPELL_WIDTH * x + SPELLS_DISTANCE_X * x;
+                }
+
+                SpellRenderComponent spell = new SpellRenderComponent(activeSpells.get(spell_index), SPELL_WIDTH, SPELL_HEIGHT, spellX, spellY);
+                spell.render(pGuiGraphics, mouseX, mouseY, partialTick);
+
+                spell_index++;
+            }
         }
+    }
+
+    private void renderGuiArrows(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick, int centerX, int centerY) {
+        if (this.activePage > 0) {
+            this.arrowLeft = new SpellGuiArrowComponent(true, 18, 18, centerX - this.width / 2 + 14, centerY + this.height / 2 - 18 - 10);
+            arrowLeft.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
+        }
+
+        this.arrowRight = new SpellGuiArrowComponent(false, 18, 18, centerX + this.width / 2 - 18 - 14, centerY + this.height / 2 - 18 -10);
+        arrowRight.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0) { // 0 is the button ID for the left mouse click
+        if (button == 0) {
             Player player = Minecraft.getInstance().player;
-
-            if (arrowLeft != null && arrowLeft.isMouseOver(mouseX, mouseY)) {
+            if (arrowLeft != null && arrowLeft.isMouseOver(mouseX, mouseY) && this.activePage > 0) {
                 previousPage();
                 player.playSound(SoundEvents.BOOK_PAGE_TURN);
-
                 return true;
             } else if (arrowRight != null && arrowRight.isMouseOver(mouseX, mouseY)) {
                 nextPage();
                 player.playSound(SoundEvents.BOOK_PAGE_TURN);
-
                 return true;
             }
         }
-
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
+    @Override
+    public void onClose() {
+        ClientSpellsData.syncData();
+
+        super.onClose();
+    }
+
     public void nextPage() {
-        activePage++;
+        activePage += 1;
     }
 
     public void previousPage() {
         activePage = Math.max(activePage - 1, 0);
     }
 }
-

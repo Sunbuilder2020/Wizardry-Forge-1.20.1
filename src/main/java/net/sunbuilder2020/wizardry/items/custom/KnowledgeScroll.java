@@ -15,11 +15,10 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.sunbuilder2020.wizardry.items.ModItems;
-import net.sunbuilder2020.wizardry.networking.ModMessages;
-import net.sunbuilder2020.wizardry.networking.packet.SpellsDataSyncS2CPacket;
 import net.sunbuilder2020.wizardry.spells.AbstractSpell;
 import net.sunbuilder2020.wizardry.spells.SpellRegistry;
 import net.sunbuilder2020.wizardry.spells.playerData.PlayerSpellsProvider;
+import net.sunbuilder2020.wizardry.spells.spells.NoneSpell;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -70,25 +69,20 @@ public class KnowledgeScroll extends Item {
         int timeCharged = this.getUseDuration(pStack) - pTimeCharged;
 
         if (timeCharged >= getUseDuration(pStack) - 1) {
-            if (!pLevel.isClientSide) {
-                if (pLivingEntity instanceof Player player) {
-                    player.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(playerSpells -> {
-                        getSpellClassFromScroll(pStack).ifPresent(spell -> {
-                            if (!playerSpells.hasSpell(spell.getSpellId())) {
-                                playerSpells.addSpell(spell.getSpellId());
-                                ModMessages.sendToClient(new SpellsDataSyncS2CPacket(playerSpells.getSpells(), playerSpells.getActiveSpells(), playerSpells.getActiveSpellSlot()), (ServerPlayer) player);
+            if (pLivingEntity instanceof Player player) {
+                player.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(playerSpells -> getSpellClassFromScroll(pStack).ifPresent(spell -> {
+                    if (!playerSpells.hasSpell(SpellRegistry.getSpell(spell.getSpellId())) && !(spell instanceof NoneSpell)) {
+                        playerSpells.addSpell(SpellRegistry.getSpell(spell.getSpellId()));
+                        playerSpells.syncData((ServerPlayer) player);
 
-
-                                player.sendSystemMessage(
-                                        Component.translatable("text.wizardry.spells.learned_message", spell.getDisplayName()));
-                                if (!player.isCreative() && !player.isSpectator()) pStack.shrink(1);
-                            } else {
-                                player.sendSystemMessage(
-                                        Component.translatable("text.wizardry.spells.already_learned_message", spell.getDisplayName()).withStyle(ChatFormatting.RED));
-                            }
-                        });
-                    });
-                }
+                        player.sendSystemMessage(
+                                Component.translatable("text.wizardry.spells.learned_message", spell.getDisplayName()));
+                        if (!player.isCreative() && !player.isSpectator()) pStack.shrink(1);
+                    } else {
+                        player.sendSystemMessage(
+                                Component.translatable("text.wizardry.spells.already_learned_message", spell.getDisplayName()).withStyle(ChatFormatting.RED));
+                    }
+                }));
             }
         }
 
@@ -124,9 +118,7 @@ public class KnowledgeScroll extends Item {
 
             List<MutableComponent> tooltipInfo = spell.getUniqueInfo();
 
-            tooltipInfo.forEach(component -> {
-                pTooltipComponents.add((Component) component);
-            });
+            pTooltipComponents.addAll(tooltipInfo);
         });
 
         super.appendHoverText(pStack, pLevel, pTooltipComponents, pIsAdvanced);
@@ -136,9 +128,7 @@ public class KnowledgeScroll extends Item {
     public Component getName(ItemStack pStack) {
         AtomicReference<Component> displayName = new AtomicReference<>(null);
 
-        getSpellClassFromScroll(pStack).ifPresent(spell -> {
-            displayName.set(Component.translatable("text.wizardry.spells.display_name", spell.getDisplayName()));
-        });
+        getSpellClassFromScroll(pStack).ifPresent(spell -> displayName.set(Component.translatable("text.wizardry.spells.display_name", spell.getDisplayName())));
 
         return displayName.get() != null ? displayName.get() : super.getName(pStack);
     }

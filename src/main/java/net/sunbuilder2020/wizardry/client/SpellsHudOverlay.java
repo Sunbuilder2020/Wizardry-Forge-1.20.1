@@ -12,7 +12,7 @@ import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 import net.sunbuilder2020.wizardry.Wizardry;
 import net.sunbuilder2020.wizardry.spells.AbstractSpell;
-import net.sunbuilder2020.wizardry.spells.SpellRegistry;
+import net.sunbuilder2020.wizardry.spells.spells.NoneSpell;
 
 @OnlyIn(Dist.CLIENT)
 public class SpellsHudOverlay {
@@ -26,7 +26,7 @@ public class SpellsHudOverlay {
         Player player = Minecraft.getInstance().player;
         AbstractSpell activeSpell = ClientSpellsData.getActiveSpellInSlot(ClientSpellsData.getActiveSpellSlot());
 
-        if (player == null || player.isSpectator() || activeSpell == null) {
+        if (player == null || player.isSpectator() || activeSpell instanceof NoneSpell) {
             return;
         }
 

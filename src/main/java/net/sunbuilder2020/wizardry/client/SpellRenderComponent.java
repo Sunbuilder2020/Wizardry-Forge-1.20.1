@@ -11,22 +11,22 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.sunbuilder2020.wizardry.Wizardry;
 import net.sunbuilder2020.wizardry.spells.AbstractSpell;
-import net.sunbuilder2020.wizardry.spells.SpellRegistry;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public class SpellRenderComponent implements Renderable {
-    private ResourceLocation spellLocation;
+    private AbstractSpell spell;
     private final ResourceLocation BACKGROUND_LOCATION = new ResourceLocation(Wizardry.MOD_ID, "textures/gui/spell_background.png");
     private int width;
     private int height;
     private int posX;
     private int posY;
 
-    public SpellRenderComponent(ResourceLocation spellLocation, int width, int height, int posX, int posY) {
-        this.spellLocation = spellLocation;
+    public SpellRenderComponent(AbstractSpell spell, int width, int height, int posX, int posY) {
+        this.spell = spell;
         this.width = width;
         this.height = height;
         this.posX = posX;
@@ -34,8 +34,7 @@ public class SpellRenderComponent implements Renderable {
     }
 
     @Override
-    public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
-        AbstractSpell spell = SpellRegistry.getSpell(this.spellLocation);
+    public void render(@NotNull GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
         if (spell != null) {
             ResourceLocation spellIcon = spell.getSpellIconResource();
             MutableComponent spellName = spell.getDisplayName();
