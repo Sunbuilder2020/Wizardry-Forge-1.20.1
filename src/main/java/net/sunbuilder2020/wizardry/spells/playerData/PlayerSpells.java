@@ -10,9 +10,7 @@ import net.sunbuilder2020.wizardry.spells.AbstractSpell;
 import net.sunbuilder2020.wizardry.spells.SpellRegistry;
 import net.sunbuilder2020.wizardry.spells.spells.NoneSpell;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @AutoRegisterCapability
@@ -62,12 +60,6 @@ public class PlayerSpells {
             }
         }
         this.activeSpells.set(index, spell);
-    }
-
-    public void addActiveSpell(AbstractSpell add) {
-        if (!activeSpells.contains(add)) {
-            this.activeSpells.add(add);
-        }
     }
 
     public void removeActiveSpell(AbstractSpell remove) {
@@ -123,7 +115,16 @@ public class PlayerSpells {
 
     public void removeInvalidSpells() {
         spells.removeIf(spell -> spell instanceof NoneSpell);
-        activeSpells.removeIf(spell -> spell instanceof NoneSpell);
+
+        Set<AbstractSpell> uniqueSpells = new HashSet<>();
+        spells.removeIf(spell -> !uniqueSpells.add(spell));
+
+        for (int i = 0; i < activeSpells.size(); i++) {
+            AbstractSpell activeSpell = activeSpells.get(i);
+            if (!spells.contains(activeSpell)) {
+                activeSpells.set(i, SpellRegistry.noneSpell());
+            }
+        }
     }
 
     public void trimActiveSpells() {
@@ -132,7 +133,29 @@ public class PlayerSpells {
         }
     }
 
+    public void switchToValidSpellSlot() {
+        int originalSlot = activeSpellSlot;
+
+        if (getActiveSpell(getActiveSpellSlot()) == null || getActiveSpell(getActiveSpellSlot()) instanceof NoneSpell) {
+            if (!activeSpells.stream().filter(spell -> !(spell instanceof NoneSpell)).collect(Collectors.toList()).isEmpty()) {
+                do {
+                    activeSpellSlot += 1;
+
+                    if (activeSpellSlot < 0) {
+                        activeSpellSlot = activeSpells.size() - 1;
+                    } else if (activeSpellSlot >= activeSpells.size()) {
+                        activeSpellSlot = 0;
+                    }
+
+                    if (activeSpellSlot == originalSlot) {
+                        break;
+                    }
+                } while (SpellRegistry.isNoneSpell(activeSpells.get(activeSpellSlot)));
+            }
+        }
+    }
+
     public void syncData(ServerPlayer player) {
-        ModMessages.sendToServer(new SpellsDataSyncS2CPacket(spells, activeSpells, activeSpellSlot), player);
+        ModMessages.sendToClient(new SpellsDataSyncS2CPacket(spells, activeSpells, activeSpellSlot), player);
     }
 }

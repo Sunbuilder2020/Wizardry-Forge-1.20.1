@@ -2,13 +2,18 @@ package net.sunbuilder2020.wizardry.client;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.sunbuilder2020.wizardry.events.ClientForgeEvents;
 import net.sunbuilder2020.wizardry.networking.ModMessages;
 import net.sunbuilder2020.wizardry.networking.packet.SetSpellsDataC2SPacket;
 import net.sunbuilder2020.wizardry.spells.AbstractSpell;
+import net.sunbuilder2020.wizardry.spells.SpellRegistry;
 import net.sunbuilder2020.wizardry.spells.spells.NoneSpell;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientSpellsData {
@@ -26,6 +31,7 @@ public class ClientSpellsData {
 
     public static void setActiveSpellSlot(int spellSlot) {
         ClientSpellsData.activeSpellSlot = spellSlot;
+        syncData();
     }
 
     public static List<AbstractSpell> getSpells() {
@@ -56,12 +62,6 @@ public class ClientSpellsData {
         ClientSpellsData.activeSpells.set(index, spell);
     }
 
-    public static void addActiveSpell(AbstractSpell add) {
-        if (!activeSpells.contains(add)) {
-            ClientSpellsData.activeSpells.add(add);
-        }
-    }
-
     public static void removeActiveSpell(AbstractSpell remove) {
         ClientSpellsData.activeSpells.remove(remove);
     }
@@ -84,7 +84,7 @@ public class ClientSpellsData {
         ModMessages.sendToServer(new SetSpellsDataC2SPacket(spells, activeSpells, activeSpellSlot));
     }
 
-    public void trimActiveSpells() {
+    public static void trimActiveSpells() {
         if (activeSpells.size() > 8) {
             activeSpells = activeSpells.subList(0, 8);
         }
@@ -92,6 +92,23 @@ public class ClientSpellsData {
 
     public static void removeInvalidSpells() {
         spells.removeIf(spell -> spell instanceof NoneSpell);
-        activeSpells.removeIf(spell -> spell instanceof NoneSpell);
+
+        Set<AbstractSpell> uniqueSpells = new HashSet<>();
+        spells.removeIf(spell -> !uniqueSpells.add(spell));
+
+        for (int i = 0; i < activeSpells.size(); i++) {
+            AbstractSpell activeSpell = activeSpells.get(i);
+            if (!spells.contains(activeSpell)) {
+                activeSpells.set(i, SpellRegistry.noneSpell());
+            }
+        }
+    }
+
+    public static void switchToValidSpellSlot() {
+        if (getActiveSpellInSlot(getActiveSpellSlot()) == null || getActiveSpellInSlot(getActiveSpellSlot()) instanceof NoneSpell) {
+            if (!activeSpells.stream().filter(spell -> !(spell instanceof NoneSpell)).collect(Collectors.toList()).isEmpty()) {
+                ClientForgeEvents.switchSpellSlot(1);
+            }
+        }
     }
 }

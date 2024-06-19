@@ -89,6 +89,7 @@ public class CustomCommands {
 
         targets.forEach(target -> target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> {
             spells.addSpell(SpellRegistry.getSpell(Wizardry.MOD_ID + ":" + spellID));
+            spells.removeInvalidSpells();
             spells.syncData(target);
 
             successCount.getAndIncrement();
@@ -108,6 +109,7 @@ public class CustomCommands {
 
         targets.forEach(target -> target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> {
             spells.removeSpell(SpellRegistry.getSpell(Wizardry.MOD_ID + ":" + spell));
+            spells.removeInvalidSpells();
             spells.syncData(target);
 
             successCount.getAndIncrement();
@@ -153,6 +155,7 @@ public class CustomCommands {
             playerSpells.setSpells(spells.stream()
                     .map(SpellRegistry::getSpell)
                     .collect(Collectors.toList()));
+            playerSpells.removeInvalidSpells();
             playerSpells.syncData(target);
 
             succeeded.set(true);
@@ -176,6 +179,7 @@ public class CustomCommands {
         for (ServerPlayer player : targets) {
             player.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(playerSpells -> {
                 playerSpells.setSpells(new ArrayList<>());
+                playerSpells.removeInvalidSpells();
                 playerSpells.syncData(player);
 
                 successCount.getAndIncrement();
@@ -218,7 +222,8 @@ public class CustomCommands {
 
         targets.forEach(target -> target.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(spells -> {
             spells.setActiveSpell(SpellRegistry.getSpell(new ResourceLocation(Wizardry.MOD_ID, spellID)), index);
-
+            spells.switchToValidSpellSlot();
+            spells.trimActiveSpells();
             spells.syncData(target);
 
             successCount.getAndIncrement();

@@ -6,8 +6,10 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.sunbuilder2020.wizardry.Wizardry;
+import net.sunbuilder2020.wizardry.client.ClientCastingData;
 import net.sunbuilder2020.wizardry.client.ClientSpellsData;
-import net.sunbuilder2020.wizardry.client.SpellGUI;
+import net.sunbuilder2020.wizardry.client.screen.ClientSpellCooldownsData;
+import net.sunbuilder2020.wizardry.client.screen.SpellGUI;
 import net.sunbuilder2020.wizardry.spells.AbstractSpell;
 import net.sunbuilder2020.wizardry.spells.SpellRegistry;
 import net.sunbuilder2020.wizardry.util.KeyBinding;
@@ -29,6 +31,9 @@ public class ClientForgeEvents {
         if (KeyBinding.KEY_MAPPING_SWITCH_SPELL_RIGHT.consumeClick()) {
             switchSpellSlot(1);
         }
+
+        ClientCastingData.tick();
+        ClientSpellCooldownsData.tick();
     }
 
     /**
@@ -57,11 +62,9 @@ public class ClientForgeEvents {
             if (activeSpellSlot == originalSlot) {
                 break;
             }
-        } while (SpellRegistry.isNotNoneSpell(activeSpells.get(activeSpellSlot)));
+        } while (SpellRegistry.isNoneSpell(activeSpells.get(activeSpellSlot)));
 
         ClientSpellsData.setActiveSpellSlot(activeSpellSlot);
         ClientSpellsData.syncData();
-
-        Wizardry.LOGGER.info("Active Spell Slot: " + activeSpellSlot);
     }
 }

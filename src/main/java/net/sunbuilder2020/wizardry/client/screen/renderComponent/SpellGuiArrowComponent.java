@@ -1,4 +1,4 @@
-package net.sunbuilder2020.wizardry.client;
+package net.sunbuilder2020.wizardry.client.screen.renderComponent;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;

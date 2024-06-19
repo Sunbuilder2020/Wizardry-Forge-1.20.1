@@ -9,9 +9,10 @@ import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 import net.minecraftforge.registries.RegistryObject;
 import net.sunbuilder2020.wizardry.Wizardry;
-import net.sunbuilder2020.wizardry.spells.spells.AcupunctureSpell;
-import net.sunbuilder2020.wizardry.spells.spells.KillSpell;
+import net.sunbuilder2020.wizardry.spells.spells.HarmSpell;
+import net.sunbuilder2020.wizardry.spells.spells.HealSpell;
 import net.sunbuilder2020.wizardry.spells.spells.NoneSpell;
+import net.sunbuilder2020.wizardry.spells.spells.SectumsempraSpell;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -25,7 +26,7 @@ public class SpellRegistry {
         return new NoneSpell();
     }
 
-    public static boolean isNotNoneSpell(AbstractSpell spell) {
+    public static boolean isNoneSpell(AbstractSpell spell) {
         return spell instanceof NoneSpell;
     }
 
@@ -61,6 +62,7 @@ public class SpellRegistry {
         return REGISTRY.get().containsKey(spellResourceLocation);
     }
 
-    public static final RegistryObject<AbstractSpell> ACUPUNCTURE_SPELL = registerSpell(new AcupunctureSpell());
-    public static final RegistryObject<AbstractSpell> KILL_SPELL = registerSpell(new KillSpell());
+    public static final RegistryObject<AbstractSpell> HARM_SPELL = registerSpell(new HarmSpell());
+    public static final RegistryObject<AbstractSpell> HEAL_SPELL = registerSpell(new HealSpell());
+    public static final RegistryObject<AbstractSpell> SECTUMSEMPRA_SPELL = registerSpell(new SectumsempraSpell());
 }

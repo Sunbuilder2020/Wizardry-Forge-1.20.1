@@ -73,6 +73,7 @@ public class KnowledgeScroll extends Item {
                 player.getCapability(PlayerSpellsProvider.PLAYER_SPELLS).ifPresent(playerSpells -> getSpellClassFromScroll(pStack).ifPresent(spell -> {
                     if (!playerSpells.hasSpell(SpellRegistry.getSpell(spell.getSpellId())) && !(spell instanceof NoneSpell)) {
                         playerSpells.addSpell(SpellRegistry.getSpell(spell.getSpellId()));
+                        playerSpells.removeInvalidSpells();
                         playerSpells.syncData((ServerPlayer) player);
 
                         player.sendSystemMessage(
@@ -117,12 +118,12 @@ public class KnowledgeScroll extends Item {
             pTooltipComponents.add(Component.empty());
 
             List<MutableComponent> tooltipInfo = spell.getUniqueInfo();
-
             pTooltipComponents.addAll(tooltipInfo);
         });
 
         super.appendHoverText(pStack, pLevel, pTooltipComponents, pIsAdvanced);
     }
+
 
     @Override
     public Component getName(ItemStack pStack) {
@@ -141,6 +142,6 @@ public class KnowledgeScroll extends Item {
 
     @Override
     public int getUseDuration(ItemStack pStack) {
-        return 100;
+        return 80;
     }
 }

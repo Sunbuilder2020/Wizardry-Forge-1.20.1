@@ -33,7 +33,7 @@ public class SetSpellsDataC2SPacket {
         buf.writeInt(activeSpellSlot);
     }
 
-    public boolean  handle(Supplier<NetworkEvent.Context> supplier) {
+    public boolean handle(Supplier<NetworkEvent.Context> supplier) {
         ServerPlayer player = supplier.get().getSender();
 
         NetworkEvent.Context context = supplier.get();

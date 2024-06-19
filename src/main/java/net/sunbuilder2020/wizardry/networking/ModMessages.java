@@ -7,7 +7,9 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 import net.sunbuilder2020.wizardry.Wizardry;
+import net.sunbuilder2020.wizardry.networking.packet.CastingDataSyncS2CPacket;
 import net.sunbuilder2020.wizardry.networking.packet.SetSpellsDataC2SPacket;
+import net.sunbuilder2020.wizardry.networking.packet.SpellCooldownsSyncS2CPacket;
 import net.sunbuilder2020.wizardry.networking.packet.SpellsDataSyncS2CPacket;
 
 public class ModMessages {
@@ -37,6 +39,18 @@ public class ModMessages {
                 .decoder(buf -> new SetSpellsDataC2SPacket(buf))
                 .encoder(SetSpellsDataC2SPacket::toBytes)
                 .consumerMainThread(SetSpellsDataC2SPacket::handle)
+                .add();
+
+        net.messageBuilder(CastingDataSyncS2CPacket.class, ID(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(buf -> new CastingDataSyncS2CPacket(buf))
+                .encoder(CastingDataSyncS2CPacket::toBytes)
+                .consumerMainThread(CastingDataSyncS2CPacket::handle)
+                .add();
+
+        net.messageBuilder(SpellCooldownsSyncS2CPacket.class, ID(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(buf -> new SpellCooldownsSyncS2CPacket(buf))
+                .encoder(SpellCooldownsSyncS2CPacket::toBytes)
+                .consumerMainThread(SpellCooldownsSyncS2CPacket::handle)
                 .add();
     }
 
