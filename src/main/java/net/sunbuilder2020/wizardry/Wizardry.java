@@ -1,6 +1,7 @@
 package net.sunbuilder2020.wizardry;
 
 import com.mojang.logging.LogUtils;
+import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationAccess;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -17,6 +18,7 @@ import net.sunbuilder2020.wizardry.items.ModItems;
 import net.sunbuilder2020.wizardry.networking.ModMessages;
 import net.sunbuilder2020.wizardry.spells.SpellRegistry;
 import org.slf4j.Logger;
+import software.bernie.geckolib.GeckoLib;
 
 // The value here should match an entry in the META-INF/mods.toml file
 //Todo: Add hurt marking to Damaging spells, Better Animation/Textures/Models, Add mod Config, Fix: Spell only able to cast once
@@ -30,6 +32,8 @@ public class Wizardry {
         modEventBus.addListener(ModClientEvents::registerRenderers);
 
         MinecraftForge.EVENT_BUS.register(this);
+
+        GeckoLib.initialize();
 
         ModItems.register(modEventBus);
         ModCreativeModeTabs.register(modEventBus);
