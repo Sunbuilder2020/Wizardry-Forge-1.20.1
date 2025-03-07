@@ -9,11 +9,13 @@
   "spell.wizardry.harm": "Harm",
   "spell.wizardry.heal": "Heal",
   "spell.wizardry.sectumsempra": "Sectumsempra",
+  "spell.wizardry.mana_shield": "Mana Shield",
 
   "text.wizardry.none.info": "If you read this, pls report it on my Github",
   "text.wizardry.harm.info": "Fires a projectile that damages the first target it hits",
   "text.wizardry.heal.info": "Heals the user",
   "text.wizardry.sectumsempra.info": "Instantly damages the first entity the user is looking at",
+  "text.wizardry.mana_shield.info": "Protects the user from a certain amount of damage and reduces damage taken for a short time",
 
   "text.wizardry.spells.display_name": "Scroll of %s",
   "text.wizardry.knowledge_scroll.info": "Hold Right-Click to learn this Spell.",

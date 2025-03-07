@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import software.bernie.geckolib.GeckoLib;
 
 // The value here should match an entry in the META-INF/mods.toml file
-//Todo: Add hurt marking to Damaging spells, Better Animation/Textures/Models, Add mod Config, Fix: Spell only able to cast once
+//Todo: Add hurt marking to Damaging spells, Better Animation/Textures/Models, Add mod Config
 @Mod(Wizardry.MOD_ID)
 public class Wizardry {
     public static final String MOD_ID = "wizardry";

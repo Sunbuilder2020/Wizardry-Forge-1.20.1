@@ -9,10 +9,7 @@ import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 import net.minecraftforge.registries.RegistryObject;
 import net.sunbuilder2020.wizardry.Wizardry;
-import net.sunbuilder2020.wizardry.spells.spells.HarmSpell;
-import net.sunbuilder2020.wizardry.spells.spells.HealSpell;
-import net.sunbuilder2020.wizardry.spells.spells.NoneSpell;
-import net.sunbuilder2020.wizardry.spells.spells.SectumsempraSpell;
+import net.sunbuilder2020.wizardry.spells.spells.*;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -64,5 +61,6 @@ public class SpellRegistry {
 
     public static final RegistryObject<AbstractSpell> HARM_SPELL = registerSpell(new HarmSpell());
     public static final RegistryObject<AbstractSpell> HEAL_SPELL = registerSpell(new HealSpell());
+    public static final RegistryObject<AbstractSpell> MANA_SHIELD_SPELL = registerSpell(new ManaShieldSpell());
     public static final RegistryObject<AbstractSpell> SECTUMSEMPRA_SPELL = registerSpell(new SectumsempraSpell());
 }
